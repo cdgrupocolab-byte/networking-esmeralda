@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Networking Esmeralda — CD Grupo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .font-display { font-family: 'Cormorant Garamond', serif; }
+  .esmeralda-glow { box-shadow: 0 0 40px rgba(16, 185, 129, 0.15), 0 0 80px rgba(16, 185, 129, 0.05); }
+  .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2); }
+  .gem-shimmer {
+    background: linear-gradient(135deg, #10b981 0%, #059669 25%, #34d399 50%, #059669 75%, #10b981 100%);
+    background-size: 200% 200%;
+    animation: shimmer 4s ease infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .noise-bg::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 100;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .spinner { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-gradient-to-br from-emerald-950 via-slate-950 to-emerald-950 text-emerald-50 min-h-screen">
+
+<div id="app" class="min-h-screen">
+  <div class="noise-bg"></div>
+
+  <!-- Header -->
+  <header class="relative overflow-hidden border-b border-emerald-800/30">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.15),_transparent_70%)]"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-10">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-12 h-12 rounded-full gem-shimmer flex items-center justify-center esmeralda-glow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-950"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+            </div>
+            <span class="text-emerald-400/70 text-xs tracking-[0.3em] uppercase">Mentoria Esmeralda</span>
+          </div>
+          <h1 class="font-display text-5xl md:text-6xl font-light tracking-tight text-emerald-50 leading-none">
+            Networking <em class="text-emerald-400">Esmeralda</em>
+          </h1>
+          <p class="text-emerald-200/60 mt-3 max-w-lg">
+            Conecte-se com outros mentorados do programa. Toque no WhatsApp pra chamar ou no Instagram pra seguir.
+          </p>
+        </div>
+        <div class="flex flex-col gap-2" id="admin-controls">
+          <button id="btn-login" class="px-4 py-2 rounded-full border border-emerald-700/40 hover:border-emerald-500 hover:bg-emerald-900/30 transition-all flex items-center gap-2 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Admin
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 mt-8 text-sm text-emerald-300/70">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="count-members">0 mentorados</span>
+        </div>
+        <div class="h-1 w-1 rounded-full bg-emerald-500/50"></div>
+        <span id="count-nichos">0 nichos</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Search & filters -->
+  <div class="max-w-6xl mx-auto px-6 py-6 space-y-4">
+    <div class="relative">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500/60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Buscar por nome ou nicho…" class="w-full pl-11 pr-4 py-3 rounded-full bg-emerald-950/50 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50 placeholder:text-emerald-600/60">
+    </div>
+    <div id="nicho-filters" class="flex gap-2 overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide"></div>
+  </div>
+
+  <!-- Grid -->
+  <main class="max-w-6xl mx-auto px-6 pb-20">
+    <div id="loading" class="text-center py-20 text-emerald-500/60">
+      <svg class="spinner w-8 h-8 mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <p class="mt-3">Carregando…</p>
+    </div>
+    <div id="empty" class="text-center py-20 hidden">
+      <svg class="w-12 h-12 mx-auto text-emerald-700/40 mb-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+      <p class="font-display text-2xl text-emerald-200/70 italic" id="empty-msg">Nenhum mentorado cadastrado ainda</p>
+    </div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </main>
+</div>
+
+<!-- Login modal -->
+<div id="modal-login" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-emerald-950 border border-emerald-700/40 rounded-2xl p-6 max-w-sm w-full esmeralda-glow" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-display text-2xl">Acesso admin</h2>
+      <button onclick="closeModal('modal-login')" class="text-emerald-400/60 hover:text-emerald-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <input id="input-password" type="password" placeholder="Senha" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50">
+    <p id="login-error" class="text-red-400 text-sm mt-2 hidden"></p>
+    <button id="btn-submit-login" class="w-full mt-4 py-3 rounded-xl gem-shimmer text-emerald-950 font-semibold">Entrar</button>
+  </div>
+</div>
+
+<!-- Form modal -->
+<div id="modal-form" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  <div class="bg-emerald-950 border border-emerald-700/40 rounded-2xl p-6 max-w-md w-full esmeralda-glow max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-display text-2xl">Novo mentorado</h2>
+      <button onclick="closeModal('modal-form')" class="text-emerald-400/60 hover:text-emerald-200">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-emerald-300/70 tracking-wide uppercase">Nome *</label>
+        <input id="f-nome" placeholder="Nome completo" class="w-full mt-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50 placeholder:text-emerald-600/60 text-sm">
+      </div>
+      <div>
+        <label class="text-xs text-emerald-300/70 tracking-wide uppercase">Nicho</label>
+        <input id="f-nicho" placeholder="Ex: Infoprodutos, Imobiliário…" class="w-full mt-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50 placeholder:text-emerald-600/60 text-sm">
+      </div>
+      <div>
+        <label class="text-xs text-emerald-300/70 tracking-wide uppercase">WhatsApp *</label>
+        <input id="f-whatsapp" placeholder="5521999999999 (com DDI)" class="w-full mt-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50 placeholder:text-emerald-600/60 text-sm">
+      </div>
+      <div>
+        <label class="text-xs text-emerald-300/70 tracking-wide uppercase">Instagram</label>
+        <input id="f-instagram" placeholder="@usuario" class="w-full mt-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-800/40 focus:border-emerald-500 focus:outline-none text-emerald-50 placeholder:text-emerald-600/60 text-sm">
+      </div>
+      <div>
+        <label class="text-xs text-emerald-300/70 tracking-wide uppercase">Foto</label>
+        <div class="mt-1 flex items-center gap-3">
+          <div id="foto-preview-box" class="w-16 h-16 rounded-full border-2 border-dashed border-emerald-800 flex items-center justify-center shrink-0 overflow-hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+          </div>
+          <label class="flex-1 cursor-pointer">
+            <div id="foto-label" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-emerald-800/40 hover:border-emerald-500 transition-colors text-sm text-emerald-200 text-center">
+              Enviar do dispositivo
+            </div>
+            <input id="f-foto-file" type="file" accept="image/*" class="hidden">
+          </label>
+          <button id="btn-remove-foto" class="hidden p-2 rounded-lg bg-red-950/50 hover:bg-red-900 text-red-400 shrink-0" title="Remover foto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <p id="foto-status" class="text-xs text-emerald-400/60 mt-2 hidden"></p>
+      </div>
+      <div id="save-error" class="hidden px-4 py-3 rounded-xl bg-red-950/50 border border-red-800 text-red-300 text-sm"></div>
+      <button id="btn-save" class="w-full py-3 rounded-xl gem-shimmer text-emerald-950 font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase + App logic -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+// === CONFIGURAÇÃO ===
+const firebaseConfig = {
+  apiKey: "AIzaSyAHg9HH5JQ3CX3LU5YUlc69ZIA67e3Y-QE",
+  authDomain: "networkingcdgrupoesmeralda.firebaseapp.com",
+  projectId: "networkingcdgrupoesmeralda",
+  storageBucket: "networkingcdgrupoesmeralda.firebasestorage.app",
+  messagingSenderId: "22591649770",
+  appId: "1:22591649770:web:0e407a90654f2f3005e493"
+};
+const COLLECTION = "esmeralda"; // <-- diferente entre os 2 apps
+const ADMIN_PASSWORD = "cdgrupo2026";
+// =====================
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// State
+let members = [];
+let isAdmin = false;
+let searchText = "";
+let nichoFilter = "Todos";
+let pendingFotoFile = null;
+
+// Utils
+const cleanPhone = (p) => (p || "").replace(/\D/g, "");
+const cleanInsta = (i) => (i || "").replace("@", "").replace(/https?:\/\/(www\.)?instagram\.com\//, "").replace("/", "");
+const $ = (id) => document.getElementById(id);
+const closeModal = (id) => $(id).classList.add("hidden");
+window.closeModal = closeModal;
+
+// Load members from Firestore
+async function loadMembers() {
+  try {
+    const q = query(collection(db, COLLECTION), orderBy("nome"));
+    const snap = await getDocs(q);
+    members = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) {
+    console.error("Erro ao carregar:", e);
+    members = [];
+  }
+  $("loading").classList.add("hidden");
+  render();
+}
+
+// Render grid
+function render() {
+  const filtered = members.filter(m => {
+    const match = m.nome.toLowerCase().includes(searchText.toLowerCase()) ||
+                  (m.nicho || "").toLowerCase().includes(searchText.toLowerCase());
+    const nichoMatch = nichoFilter === "Todos" || m.nicho === nichoFilter;
+    return match && nichoMatch;
+  });
+
+  // Counts
+  const nichos = [...new Set(members.map(m => m.nicho).filter(Boolean))];
+  $("count-members").textContent = `${members.length} ${members.length === 1 ? 'mentorado' : 'mentorados'}`;
+  $("count-nichos").textContent = `${nichos.length} nichos`;
+
+  // Nicho filters
+  const filtersEl = $("nicho-filters");
+  if (nichos.length > 0) {
+    const allNichos = ["Todos", ...nichos.sort()];
+    filtersEl.innerHTML = allNichos.map(n => `
+      <button data-nicho="${n}" class="nicho-btn px-4 py-1.5 rounded-full text-sm whitespace-nowrap border transition-all ${
+        nichoFilter === n
+          ? 'gem-shimmer text-emerald-950 border-transparent font-semibold'
+          : 'border-emerald-800/40 text-emerald-300/70 hover:border-emerald-600'
+      }">${n}</button>
+    `).join("");
+    filtersEl.querySelectorAll(".nicho-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        nichoFilter = btn.dataset.nicho;
+        render();
+      });
+    });
+  } else {
+    filtersEl.innerHTML = "";
+  }
+
+  // Empty state
+  const empty = $("empty");
+  const grid = $("grid");
+  if (filtered.length === 0) {
+    empty.classList.remove("hidden");
+    grid.innerHTML = "";
+    $("empty-msg").textContent = members.length === 0
+      ? "Nenhum mentorado cadastrado ainda"
+      : "Nenhum resultado";
+    return;
+  }
+  empty.classList.add("hidden");
+
+  // Cards
+  grid.innerHTML = filtered.map(m => {
+    const initial = m.nome.charAt(0).toUpperCase();
+    const fotoHtml = m.foto
+      ? `<img src="${m.foto}" alt="${m.nome}" class="relative w-16 h-16 rounded-full object-cover border-2 border-emerald-950">`
+      : `<div class="relative w-16 h-16 rounded-full bg-emerald-900 border-2 border-emerald-950 flex items-center justify-center font-display text-2xl text-emerald-300">${initial}</div>`;
+    const instaBtn = m.instagram ? `
+      <a href="https://instagram.com/${cleanInsta(m.instagram)}" target="_blank" rel="noopener" class="flex items-center justify-center w-11 h-11 rounded-xl border border-emerald-700/40 hover:border-emerald-500 hover:bg-emerald-900/30 transition-all" title="@${cleanInsta(m.instagram)}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+      </a>` : "";
+    const deleteBtn = isAdmin ? `
+      <button data-id="${m.id}" data-fotopath="${m.fotoPath || ''}" class="delete-btn absolute top-3 right-3 p-1.5 rounded-full bg-red-950/50 hover:bg-red-900 text-red-400 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>` : "";
+
+    return `
+      <article class="card-hover relative rounded-2xl bg-gradient-to-br from-emerald-950/80 to-slate-900/80 border border-emerald-800/30 p-5 backdrop-blur">
+        ${deleteBtn}
+        <div class="flex items-start gap-4 mb-4">
+          <div class="relative shrink-0">
+            <div class="absolute -inset-0.5 rounded-full gem-shimmer opacity-60 blur-sm"></div>
+            ${fotoHtml}
+          </div>
+          <div class="flex-1 min-w-0 pt-1">
+            <h3 class="font-display text-xl font-semibold text-emerald-50 leading-tight truncate">${m.nome}</h3>
+            ${m.nicho ? `<p class="text-xs text-emerald-400 tracking-wide uppercase mt-1">${m.nicho}</p>` : ""}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="https://wa.me/${cleanPhone(m.whatsapp)}" target="_blank" rel="noopener" class="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            WhatsApp
+          </a>
+          ${instaBtn}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  // Delete handlers
+  grid.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", () => handleDelete(btn.dataset.id, btn.dataset.fotopath));
+  });
+}
+
+// Delete member
+async function handleDelete(id, fotoPath) {
+  if (!confirm("Remover este mentorado?")) return;
+  // Otimista
+  members = members.filter(m => m.id !== id);
+  render();
+  try {
+    await deleteDoc(doc(db, COLLECTION, id));
+    if (fotoPath) {
+      try { await deleteObject(ref(storage, fotoPath)); } catch (e) { console.warn("Foto storage:", e); }
+    }
+  } catch (e) {
+    console.error("Erro ao deletar:", e);
+    alert("Erro ao remover do servidor. Recarregue a página.");
+  }
+}
+
+// Compress image
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 400;
+        let { width, height } = img;
+        if (width > height && width > max) { height = (height * max) / width; width = max; }
+        else if (height > max) { width = (width * max) / height; height = max; }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => resolve(blob), "image/jpeg", 0.82);
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Add member
+async function handleAdd() {
+  const nome = $("f-nome").value.trim();
+  const nicho = $("f-nicho").value.trim();
+  const whatsapp = $("f-whatsapp").value.trim();
+  const instagram = $("f-instagram").value.trim();
+  if (!nome || !whatsapp) return;
+
+  $("btn-save").disabled = true;
+  $("btn-save").textContent = "Salvando…";
+  $("save-error").classList.add("hidden");
+
+  try {
+    let fotoUrl = "";
+    let fotoPath = "";
+
+    if (pendingFotoFile) {
+      const compressed = await compressImage(pendingFotoFile);
+      const filename = `${COLLECTION}/${Date.now()}_${Math.random().toString(36).slice(2,7)}.jpg`;
+      const sRef = ref(storage, filename);
+      await uploadBytes(sRef, compressed);
+      fotoUrl = await getDownloadURL(sRef);
+      fotoPath = filename;
+    }
+
+    const docRef = await addDoc(collection(db, COLLECTION), {
+      nome, nicho, whatsapp, instagram,
+      foto: fotoUrl,
+      fotoPath: fotoPath,
+      createdAt: serverTimestamp()
+    });
+
+    members.push({ id: docRef.id, nome, nicho, whatsapp, instagram, foto: fotoUrl, fotoPath });
+    members.sort((a,b) => a.nome.localeCompare(b.nome));
+    render();
+
+    // Limpa form
+    $("f-nome").value = "";
+    $("f-nicho").value = "";
+    $("f-whatsapp").value = "";
+    $("f-instagram").value = "";
+    clearFotoPreview();
+    closeModal("modal-form");
+  } catch (e) {
+    console.error("Erro:", e);
+    $("save-error").textContent = "⚠️ " + (e.message || "Erro ao salvar");
+    $("save-error").classList.remove("hidden");
+  }
+
+  $("btn-save").disabled = false;
+  $("btn-save").textContent = "Salvar";
+}
+
+function clearFotoPreview() {
+  pendingFotoFile = null;
+  $("foto-preview-box").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>`;
+  $("foto-preview-box").className = "w-16 h-16 rounded-full border-2 border-dashed border-emerald-800 flex items-center justify-center shrink-0 overflow-hidden";
+  $("foto-label").textContent = "Enviar do dispositivo";
+  $("btn-remove-foto").classList.add("hidden");
+  $("foto-status").classList.add("hidden");
+  $("f-foto-file").value = "";
+}
+
+// Admin controls
+function updateAdminControls() {
+  const panel = $("admin-controls");
+  if (isAdmin) {
+    panel.innerHTML = `
+      <button id="btn-add" class="px-4 py-2 rounded-full gem-shimmer text-emerald-950 font-semibold flex items-center gap-2 text-sm esmeralda-glow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Adicionar
+      </button>
+      <button id="btn-logout" class="text-xs text-emerald-400/60 hover:text-emerald-300">Sair do admin</button>
+    `;
+    $("btn-add").addEventListener("click", () => $("modal-form").classList.remove("hidden"));
+    $("btn-logout").addEventListener("click", () => { isAdmin = false; updateAdminControls(); render(); });
+  } else {
+    panel.innerHTML = `
+      <button id="btn-login" class="px-4 py-2 rounded-full border border-emerald-700/40 hover:border-emerald-500 hover:bg-emerald-900/30 transition-all flex items-center gap-2 text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Admin
+      </button>
+    `;
+    $("btn-login").addEventListener("click", () => $("modal-login").classList.remove("hidden"));
+  }
+}
+
+// Event listeners
+$("search").addEventListener("input", (e) => { searchText = e.target.value; render(); });
+
+$("btn-submit-login").addEventListener("click", () => {
+  if ($("input-password").value === ADMIN_PASSWORD) {
+    isAdmin = true;
+    $("input-password").value = "";
+    $("login-error").classList.add("hidden");
+    closeModal("modal-login");
+    updateAdminControls();
+    render();
+  } else {
+    $("login-error").textContent = "Senha incorreta";
+    $("login-error").classList.remove("hidden");
+  }
+});
+
+$("input-password").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("btn-submit-login").click();
+});
+
+$("f-foto-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    alert("Selecione uma imagem");
+    return;
+  }
+  pendingFotoFile = file;
+  const url = URL.createObjectURL(file);
+  $("foto-preview-box").innerHTML = `<img src="${url}" class="w-full h-full object-cover">`;
+  $("foto-preview-box").className = "w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-700 shrink-0";
+  $("foto-label").textContent = "Trocar foto";
+  $("btn-remove-foto").classList.remove("hidden");
+  const sizeKB = Math.round(file.size / 1024);
+  $("foto-status").textContent = `${sizeKB}KB — será comprimida ao salvar`;
+  $("foto-status").classList.remove("hidden");
+});
+
+$("btn-remove-foto").addEventListener("click", clearFotoPreview);
+$("btn-save").addEventListener("click", handleAdd);
+
+document.getElementById("modal-login").addEventListener("click", (e) => {
+  if (e.target.id === "modal-login") closeModal("modal-login");
+});
+document.getElementById("modal-form").addEventListener("click", (e) => {
+  if (e.target.id === "modal-form") closeModal("modal-form");
+});
+
+updateAdminControls();
+loadMembers();
+</script>
+
+</body>
+</html>
